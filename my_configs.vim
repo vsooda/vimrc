@@ -34,7 +34,6 @@ inoremap {} {<esc>o}<esc>O
 "map <leader>4 :tabnext 4<CR>
 "map <leader>5 :tabnext 5<CR>
 "map <leader>6 :tabnext 6<CR>
-"let g:clang_library_path = '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/'
 "highlight OverLength ctermbg=red ctermfg=white guibg=#592929 
 "match OverLength /\%81v.\+/
 "
@@ -43,3 +42,10 @@ inoremap {} {<esc>o}<esc>O
 map <leader>2 :set shiftwidth=2 tabstop=2<CR>
 map <leader>3 :set shiftwidth=3 tabstop=3<CR>
 map <leader>4 :set shiftwidth=4 tabstop=4<CR>
+
+
+" mac
+
+"for vim system clipboard
+"set clipboard=unnamed
+"let g:clang_library_path = '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/'
