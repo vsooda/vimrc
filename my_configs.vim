@@ -3,6 +3,8 @@ nnoremap <F9> :exe 'NERDTreeToggle'<CR>
 "for easy copy 
 set mouse=
 
+set guifont=Ubuntu\ Mono\ 12
+
 "for outside paste mistake
 nnoremap <F2> :set invpaste paste?<CR>
 imap <F2> <C-O>:set invpaste paste?<CR>
