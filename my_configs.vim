@@ -3,7 +3,7 @@ nnoremap <F9> :exe 'NERDTreeToggle'<CR>
 "for easy copy 
 set mouse=
 
-set guifont=Ubuntu\ Mono\ 12
+"set guifont=Ubuntu\ Mono\ 12
 
 "for outside paste mistake
 nnoremap <F2> :set invpaste paste?<CR>
@@ -44,6 +44,15 @@ inoremap {} {<esc>o}<esc>O
 map <leader>2 :set shiftwidth=2 tabstop=2<CR>
 map <leader>3 :set shiftwidth=3 tabstop=3<CR>
 map <leader>4 :set shiftwidth=4 tabstop=4<CR>
+
+"syntastic check setting
+let g:syntastic_mode_map = { 'mode': 'passive', 'active_filetypes':   [],'passive_filetypes': [] }
+"close the error msg
+map <leader>c :lclose<CR>
+"check manually
+noremap <leader>e :SyntasticCheck<CR>
+"enable or disable the checker
+noremap <leader>s :SyntasticToggleMode<CR>
 
 
 " mac
