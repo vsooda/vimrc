@@ -54,9 +54,10 @@ noremap <leader>e :SyntasticCheck<CR>
 "enable or disable the checker
 noremap <leader>s :SyntasticToggleMode<CR>
 
+"for vim system clipboard
+set clipboard=unnamedplus
 
 " mac
 
-"for vim system clipboard
 "set clipboard=unnamed
 "let g:clang_library_path = '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/'
