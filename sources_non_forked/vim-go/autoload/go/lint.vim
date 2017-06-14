@@ -10,8 +10,8 @@ if !exists("g:go_metalinter_enabled")
   let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
 endif
 
-if !exists("g:go_metalinter_deadline")
-  let g:go_metalinter_deadline = "5s"
+if !exists("g:go_metalinter_excludes")
+  let g:go_metalinter_excludes = []
 endif
 
 if !exists("g:go_golint_bin")
@@ -44,20 +44,41 @@ function! go#lint#Gometa(autosave, ...) abort
       let cmd += ["--enable=".linter]
     endfor
 
+    for exclude in g:go_metalinter_excludes
+      let cmd += ["--exclude=".exclude]
+    endfor
+
     " path
     let cmd += [expand('%:p:h')]
   else
     " the user wants something else, let us use it.
-    let cmd += [split(g:go_metalinter_command, " ")]
+    let cmd += split(g:go_metalinter_command, " ")
   endif
 
+  " gometalinter has a default deadline of 5 seconds.
+  "
+  " For async mode (s:lint_job), we want to override the default deadline only
+  " if we have a deadline configured.
+  "
+  " For sync mode (go#tool#ExecuteInDir), always explicitly pass the 5 seconds
+  " deadline if there is no other deadline configured. If a deadline is
+  " configured, then use it.
+
+  " Call gometalinter asynchronously.
   if go#util#has_job() && has('lambda')
+    let deadline = get(g:, 'go_metalinter_deadline', 0)
+    if deadline != 0
+      let cmd += ["--deadline=" . deadline]
+    endif
+
     call s:lint_job({'cmd': cmd})
     return
   endif
 
-  " we add deadline only for sync mode
-  let cmd += ["--deadline=" . g:go_metalinter_deadline]
+  " We're calling gometalinter synchronously.
+
+  let cmd += ["--deadline=" . get(g:, 'go_metalinter_deadline', "5s")]
+
   if a:autosave
     " include only messages for the active buffer
     let cmd += ["--include='^" . expand('%:p') . ".*$'"]
@@ -96,18 +117,17 @@ endfunction
 " Golint calls 'golint' on the current directory. Any warnings are populated in
 " the location list
 function! go#lint#Golint(...) abort
-  let bin_path = go#path#CheckBinPath(g:go_golint_bin) 
-  if empty(bin_path) 
-    return 
+  let bin_path = go#path#CheckBinPath(g:go_golint_bin)
+  if empty(bin_path)
+    return
   endif
 
   if a:0 == 0
-    let goargs = shellescape(expand('%'))
+    let out = go#util#System(bin_path)
   else
-    let goargs = go#util#Shelljoin(a:000)
+    let out = go#util#System(bin_path . " " . go#util#Shelljoin(a:000))
   endif
 
-  let out = go#util#System(bin_path . " " . goargs)
   if empty(out)
     echon "vim-go: " | echohl Function | echon "[lint] PASS" | echohl None
     return
@@ -234,28 +254,23 @@ function s:lint_job(args)
     caddexpr a:msg
     let &errorformat = old_errorformat
 
-    " TODO(arslan): cursor still jumps to first error even If I don't want
-    " it. Seems like there is a regression somewhere, but not sure where.
+    " TODO(jinleileiking): give a configure to jump or not
+    let l:winnr = winnr()
+
     copen
+
+    exe l:winnr . "wincmd w"
+
   endfunction
 
-  function! s:close_cb(chan) closure
-    let l:job = ch_getjob(a:chan)
-    let l:status = job_status(l:job)
-
-    let exitval = 1
-    if l:status == "dead"
-      let l:info = job_info(l:job)
-      let exitval = l:info.exitval
-    endif
-
+  function! s:exit_cb(job, exitval) closure
     let status = {
           \ 'desc': 'last status',
           \ 'type': "gometaliner",
           \ 'state': "finished",
           \ }
 
-    if exitval
+    if a:exitval
       let status.state = "failed"
     endif
 
@@ -267,7 +282,7 @@ function s:lint_job(args)
     call go#statusline#Update(status_dir, status)
 
     let errors = go#list#Get(l:listtype)
-    if empty(errors) 
+    if empty(errors)
       call go#list#Window(l:listtype, len(errors))
     elseif has("patch-7.4.2200")
       if l:listtype == 'quickfix'
@@ -283,8 +298,8 @@ function s:lint_job(args)
   endfunction
 
   let start_options = {
-        \ 'callback': function("s:callback"),
-        \ 'close_cb': function("s:close_cb"),
+        \ 'callback': funcref("s:callback"),
+        \ 'exit_cb': funcref("s:exit_cb"),
         \ }
 
   call job_start(a:args.cmd, start_options)
