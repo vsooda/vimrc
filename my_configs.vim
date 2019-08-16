@@ -55,6 +55,11 @@ noremap <leader>s :SyntasticToggleMode<CR>
 
 "for vim system clipboard
 set clipboard=unnamedplus
+let g:vim_markdown_folding_disabled = 1
+
+set noexpandtab
+let g:go_version_warning=0
+set colorcolumn=80
 
 " mac
 
