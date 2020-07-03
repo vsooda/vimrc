@@ -147,7 +147,6 @@ snippet del "<del>" w
 <del cite="$2" datetime="${3:`date '+%Y-%m-%dT%H:%M:%S%:z'`}">$1</del>
 endsnippet
 
-<<<<<<< HEAD
 snippet dfn "<dfn>" w
 <dfn>$1</dfn>
 endsnippet
@@ -158,22 +157,6 @@ snippet div "<div>" w
 </div>
 endsnippet
 
-=======
-snippet body "XHTML <body>"
-<body id="${1:`!p
-snip.rv = snip.fn and 'Hallo' or 'Nothin'
-`}"${2: onload="$3"}>
-	$0
-</body>
-endsnippet
-
-snippet div. "<div> with class" w
-<div`!p snip.rv=' class="' if t[1] else ""`${1:name}`!p snip.rv = '"' if t[1] else ""`>
-	$0
-</div>
-endsnippet
-
->>>>>>> molokai
 snippet div# "<div> with ID & class" w
 <div`!p snip.rv=' id="' if t[1] else ""`${1:name}`!p snip.rv = '"' if t[1] else ""``!p snip.rv=' class="' if t[2] else ""`${2:name}`!p snip.rv = '"' if t[2] else ""`>
 	${0:${VISUAL}}
@@ -348,6 +331,10 @@ endsnippet
 
 snippet mailto "HTML <a mailto: >" w
 <a href="mailto:${1:joe@example.com}?subject=${2:feedback}">${3:email me}</a>
+endsnippet
+
+snippet tel "HTML <a tel: >" w
+<a href="tel:+${1:XX1234567890}">${2:call me}</a>
 endsnippet
 
 snippet main "<main>"
