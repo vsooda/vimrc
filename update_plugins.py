@@ -1,5 +1,7 @@
 import argparse
+import os
 import shutil
+import subprocess
 import tempfile
 import urllib.request
 import zipfile
@@ -78,6 +80,48 @@ def update(name, github_url, temp_directory):
         return False
 
 
+def generate_help_tags(plugin_names):
+    """Generate Vim help tags for updated plugins that ship documentation."""
+    vim = shutil.which("vim")
+    if not vim:
+        print("Could not generate help tags: vim was not found")
+        return False
+
+    success = True
+    for name in plugin_names:
+        doc_dir = path.join(SOURCE_DIR, name, "doc")
+        if not path.isdir(doc_dir):
+            continue
+        if not any(filename.endswith(".txt") for filename in os.listdir(doc_dir)):
+            continue
+
+        env = os.environ.copy()
+        env["VIM_PLUGIN_DOC_DIR"] = doc_dir
+        result = subprocess.run(
+            [
+                vim,
+                "-Nu",
+                "NONE",
+                "-n",
+                "-es",
+                "-c",
+                "execute 'helptags ' . fnameescape($VIM_PLUGIN_DOC_DIR)",
+                "-c",
+                "qa!",
+            ],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            print("Could not generate help tags for {}".format(name))
+            success = False
+
+    return success
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Update all bundled plugins, or only the named plugins."
@@ -97,4 +141,6 @@ if __name__ == "__main__":
     finally:
         shutil.rmtree(temp_directory)
 
-    raise SystemExit(0 if all(results) else 1)
+    updated = [name for name, result in zip(selected, results) if result]
+    tags_ok = generate_help_tags(updated)
+    raise SystemExit(0 if all(results) and tags_ok else 1)

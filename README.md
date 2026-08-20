@@ -126,6 +126,9 @@ Useful Python mappings:
 * `<leader>tt`: run the nearest test; `<leader>tf`: run the current test file
 * `<leader>ts`: run the suite; `<leader>tr`: repeat the last test
 
+Tests run in a 15-line Vim terminal split. Press `Enter` after the command
+finishes to close the runner and return to the previous window.
+
 Pytest itself remains a per-project dependency and should be installed in the
 project's virtual environment. Use `:ALEInfo` to verify that Vim can find
 `flake8` and `pyright-langserver`.
@@ -133,6 +136,11 @@ project's virtual environment. Use `:ALEInfo` to verify that Vim can find
 For projects that standardize on Ruff, ALE can use `ruff` and `ruff_format`
 instead of Flake8. Do not enable both Flake8 and Ruff for the same rules, or
 Vim will show duplicate diagnostics.
+
+Ripgrep is recommended for faster CtrlP file discovery and project search;
+the configuration falls back to Git and grep when it is unavailable:
+
+    brew install ripgrep
 
 
 ## How to include your own stuff?

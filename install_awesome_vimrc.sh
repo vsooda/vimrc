@@ -16,4 +16,6 @@ if filereadable(expand("~/.vim_runtime/my_configs.vim"))
   source ~/.vim_runtime/my_configs.vim
 endif' > ~/.vimrc
 
+vim -Nu ~/.vimrc -n -es -c Helptags -c 'qa!'
+
 echo "Installed the Ultimate Vim configuration successfully! Enjoy :-)"

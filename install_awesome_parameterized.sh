@@ -18,6 +18,12 @@ if filereadable('$1/my_configs.vim')
   source $1/my_configs.vim
 endif"
 
+VIM_RUNTIME_INSTALL_PATH="$1" vim -Nu NONE -n -es \
+    -c "execute 'set runtimepath^=' . fnameescape(\$VIM_RUNTIME_INSTALL_PATH)" \
+    -c "call pathogen#infect(\$VIM_RUNTIME_INSTALL_PATH . '/sources_non_forked/{}')" \
+    -c Helptags \
+    -c 'qa!'
+
 if [ "$2" = "--all" ]; then
     USERS=$(ls -l /home | awk '{if(NR>1)print $9}')
     for user in $USERS; do

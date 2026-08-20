@@ -48,7 +48,22 @@ nnoremap <silent> <leader>f :CtrlPMRUFiles<cr>
 let g:ctrlp_mruf_max = 100
 
 let g:ctrlp_max_height = 20
-let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git'
+let g:ctrlp_custom_ignore = 'node_modules\|__pycache__\|\.venv\|venv\|^\.DS_Store\|^\.git'
+
+" Let Git or ripgrep enumerate files instead of Vim's slower recursive glob.
+if executable('rg')
+    let g:ctrlp_user_command = {
+          \ 'types': {
+          \   1: ['.git', 'cd %s && git ls-files -co --exclude-standard']
+          \ },
+          \ 'fallback': 'cd %s && rg --files --hidden --glob "!.git"',
+          \ 'ignore': 0
+          \ }
+    let g:ctrlp_use_caching = 0
+elseif executable('git')
+    let g:ctrlp_user_command =
+          \ ['.git', 'cd %s && git ls-files -co --exclude-standard']
+endif
 
 
 """"""""""""""""""""""""""""""
@@ -76,7 +91,8 @@ let g:grepper = {
       \   'grepprg': 'rg -H --no-heading --vimgrep --smart-case --hidden --glob !.git'
       \ }
       \ }
-nnoremap <silent> <leader>g :Grepper -tool rg<CR>
+" Grepper chooses the first available tool, falling back from rg to git/grep.
+nnoremap <silent> <leader>g :Grepper<CR>
 xmap <silent> <leader>g <Plug>(GrepperOperator)
 
 
@@ -85,7 +101,13 @@ xmap <silent> <leader>g <Plug>(GrepperOperator)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:NERDTreeWinPos = "right"
 let NERDTreeShowHidden=0
-let NERDTreeIgnore = ['\.pyc$', '__pycache__']
+let NERDTreeIgnore = [
+      \ '\.pyc$',
+      \ '__pycache__$',
+      \ '^node_modules$',
+      \ '^venv$',
+      \ '\.egg-info$'
+      \ ]
 let g:NERDTreeWinSize=35
 nnoremap <silent> <leader>nn :NERDTreeToggle<cr>
 nnoremap <leader>nb :NERDTreeFromBookmark<Space>
@@ -165,6 +187,10 @@ nnoremap <silent> <leader>tf :TestFile<CR>
 nnoremap <silent> <leader>ts :TestSuite<CR>
 nnoremap <silent> <leader>tr :TestLast<CR>
 nnoremap <silent> <leader>tv :TestVisit<CR>
+if has('terminal')
+    let test#strategy = 'vimterminal'
+    let test#vim#term_position = 'botright 15'
+endif
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -175,6 +201,7 @@ let g:ale_linters = {
 \   'python': ['flake8', 'pyright']
 \}
 let g:ale_linters_explicit = 1
+let g:ale_python_auto_virtualenv = 1
 
 " Pyright replaces jedi-vim's completion and code-navigation features while
 " reusing ALE as the single editor integration layer.
@@ -182,10 +209,15 @@ let g:ale_completion_enabled = 1
 let g:ale_completion_delay = 200
 
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
-nnoremap <silent> gd <Plug>(ale_go_to_definition)
-nnoremap <silent> gr <Plug>(ale_find_references)
-nnoremap <silent> K <Plug>(ale_hover)
-nnoremap <silent> <leader>rn <Plug>(ale_rename)
+
+" Keep Vim's built-in gd and K behavior in non-Python buffers.
+augroup python_lsp_mappings
+    autocmd!
+    autocmd FileType python nmap <buffer> <silent> gd <Plug>(ale_go_to_definition)
+    autocmd FileType python nmap <buffer> <silent> gr <Plug>(ale_find_references)
+    autocmd FileType python nmap <buffer> <silent> K <Plug>(ale_hover)
+    autocmd FileType python nmap <buffer> <silent> <leader>rn <Plug>(ale_rename)
+augroup END
 
 " Disabling highlighting
 let g:ale_set_highlights = 0

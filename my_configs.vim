@@ -102,6 +102,8 @@ if exists('+wildoptions')
     set wildoptions=pum
 endif
 set wildignore+=*/node_modules/*,*/dist/*,*/build/*,*/.cache/*
+set wildignore+=*/.venv/*,*/venv/*,*/__pycache__/*,*/.pytest_cache/*
+set wildignore+=*/.mypy_cache/*,*/.ruff_cache/*,*/.tox/*,*/htmlcov/*,*.egg-info/*
 
 set updatetime=300
 set timeoutlen=400
