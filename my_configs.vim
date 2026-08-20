@@ -2,6 +2,40 @@
 scriptencoding utf-8
 
 " ---------------------------------------------------------------------------
+" Persistence and privacy
+" ---------------------------------------------------------------------------
+" Reused from the backup branch: CtrlP owns MRU history, Markdown starts
+" unfolded, and copied/deleted text is not persisted in ~/.viminfo.
+let g:vim_markdown_folding_disabled = 1
+let g:netrw_dirhistmax = 0
+set viminfo='50,<0,s10,h,:100,/100,@50
+
+if has('clipboard')
+    set clipboard=unnamedplus
+endif
+
+" Persistent undo is valuable for source files but should not retain old
+" credential contents after the original file changes.
+function! s:DisablePersistentUndoForSensitiveFile(path) abort
+    let l:path = simplify(fnamemodify(a:path, ':p'))
+    let l:name = fnamemodify(l:path, ':t')
+    let l:sensitive_dir = '/\.\%(aws\|claude\|codex\|docker\|gnupg\|kube\|ssh\)/'
+    let l:sensitive_name = '^\%(\.env\%(\..*\)\?\|\.git-credentials\|\.netrc\|\.npmrc\|\.pypirc\|credentials\?\%(\..*\)\?\|keys\?\%(\..*\)\?\|secrets\?\%(\..*\)\?\|tokens\?\%(\..*\)\?\)$'
+
+    if l:path =~# l:sensitive_dir
+                \ || l:path =~# '/\.config/gcloud/'
+                \ || l:name =~? l:sensitive_name
+                \ || l:name =~? '\.\%(key\|pem\|p12\|pfx\)$'
+        setlocal noundofile
+    endif
+endfunction
+
+augroup private_files_no_persistent_undo
+    autocmd!
+    autocmd BufReadPre,BufNewFile * call <SID>DisablePersistentUndoForSensitiveFile(expand('<afile>'))
+augroup END
+
+" ---------------------------------------------------------------------------
 " Appearance
 " ---------------------------------------------------------------------------
 if exists('+termguicolors')
@@ -13,7 +47,7 @@ let g:molokai_original = 1
 silent! colorscheme molokai
 
 set number
-set relativenumber
+set norelativenumber
 set cursorline
 if exists('+cursorlineopt')
     set cursorlineopt=number,line
@@ -100,10 +134,6 @@ nnoremap N Nzzzv
 nnoremap <silent> <leader><space> :CtrlP<CR>
 nnoremap <silent> <leader>sv :source ~/.vim_runtime/my_configs.vim<CR>:redraw<CR>:echo 'Personal Vim config reloaded'<CR>
 nnoremap <silent> <leader>ul :set list!<CR>:set list?<CR>
-nnoremap <silent> [q :cprevious<CR>
-nnoremap <silent> ]q :cnext<CR>
-nnoremap <silent> [l :lprevious<CR>
-nnoremap <silent> ]l :lnext<CR>
 nnoremap <silent> <C-Up> :resize +2<CR>
 nnoremap <silent> <C-Down> :resize -2<CR>
 nnoremap <silent> <C-Left> :vertical resize -2<CR>
@@ -114,26 +144,11 @@ if exists(':terminal') == 2
     tnoremap <Esc><Esc> <C-\><C-n>
 endif
 
-let g:personal_relative_numbers = get(g:, 'personal_relative_numbers', 1)
-function! PersonalToggleRelativeNumbers() abort
-    let g:personal_relative_numbers = !g:personal_relative_numbers
-    if g:personal_relative_numbers && mode() !=# 'i'
-        setlocal relativenumber
-    else
-        setlocal norelativenumber
-    endif
-    setlocal relativenumber?
-endfunction
-nnoremap <silent> <leader>un :call PersonalToggleRelativeNumbers()<CR>
-
 " ---------------------------------------------------------------------------
 " Context-aware UI
 " ---------------------------------------------------------------------------
 augroup personal_ui
     autocmd!
-    " Hybrid line numbers: relative while navigating, absolute while typing.
-    autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if g:personal_relative_numbers && &l:number | setlocal relativenumber | endif
-    autocmd BufLeave,FocusLost,InsertEnter,WinLeave * if &l:number | setlocal norelativenumber | endif
     autocmd WinEnter,BufEnter * setlocal cursorline
     autocmd WinLeave * setlocal nocursorline
 

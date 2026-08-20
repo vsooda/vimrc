@@ -16,29 +16,10 @@ set packpath+=~/.vim_runtime
 """"""""""""""""""""""""""""""
 let s:vim_runtime = expand('<sfile>:p:h')."/.."
 call pathogen#infect(
-      \ s:vim_runtime.'/sources_forked/{}',
       \ s:vim_runtime.'/sources_non_forked/{}',
       \ s:vim_runtime.'/my_plugins/{}')
 " Help tags are generated when plugins change, not on every startup.
 " Run :Helptags manually after adding or updating a plugin.
-
-
-""""""""""""""""""""""""""""""
-" => bufExplorer plugin
-""""""""""""""""""""""""""""""
-let g:bufExplorerDefaultHelp=0
-let g:bufExplorerShowRelativePath=1
-let g:bufExplorerFindActive=1
-let g:bufExplorerSortBy='name'
-map <leader>o :BufExplorer<cr>
-
-
-""""""""""""""""""""""""""""""
-" => MRU plugin
-""""""""""""""""""""""""""""""
-let MRU_Max_Entries = 400
-let MRU_Add_Menu = 0
-map <leader>f :MRU<CR>
 
 
 """"""""""""""""""""""""""""""
@@ -57,20 +38,17 @@ let g:ctrlp_working_path_mode = 0
 
 " Quickly find and open a file in the current working directory
 let g:ctrlp_map = '<C-f>'
-map <leader>j :CtrlP<cr>
+nnoremap <silent> <leader>j :CtrlP<cr>
 
 " Quickly find and open a buffer
-map <leader>b :CtrlPBuffer<cr>
+nnoremap <silent> <leader>b :CtrlPBuffer<cr>
+
+" Reuse CtrlP for recent files instead of maintaining a second MRU database.
+nnoremap <silent> <leader>f :CtrlPMRUFiles<cr>
+let g:ctrlp_mruf_max = 100
 
 let g:ctrlp_max_height = 20
-let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
-
-
-""""""""""""""""""""""""""""""
-" => ZenCoding
-""""""""""""""""""""""""""""""
-" Enable all functions in all modes
-let g:user_zen_mode='a'
+let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git'
 
 
 """"""""""""""""""""""""""""""
@@ -87,10 +65,19 @@ let g:snipMate = { 'snippet_version' : 1 }
 
 
 """"""""""""""""""""""""""""""
-" => Vim grep
+" => Project search (ripgrep + vim-grepper)
 """"""""""""""""""""""""""""""
-let Grep_Skip_Dirs = 'RCS CVS SCCS .svn generated'
-set grepprg=/bin/grep\ -nH
+let g:grepper = {
+      \ 'tools': ['rg', 'git', 'grep'],
+      \ 'dir': 'repo,file',
+      \ 'highlight': 1,
+      \ 'searchreg': 1,
+      \ 'rg': {
+      \   'grepprg': 'rg -H --no-heading --vimgrep --smart-case --hidden --glob !.git'
+      \ }
+      \ }
+nnoremap <silent> <leader>g :Grepper -tool rg<CR>
+xmap <silent> <leader>g <Plug>(GrepperOperator)
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -100,25 +87,22 @@ let g:NERDTreeWinPos = "right"
 let NERDTreeShowHidden=0
 let NERDTreeIgnore = ['\.pyc$', '__pycache__']
 let g:NERDTreeWinSize=35
-map <leader>nn :NERDTreeToggle<cr>
-map <leader>nb :NERDTreeFromBookmark<Space>
-map <leader>nf :NERDTreeFind<cr>
+nnoremap <silent> <leader>nn :NERDTreeToggle<cr>
+nnoremap <leader>nb :NERDTreeFromBookmark<Space>
+nnoremap <silent> <leader>nf :NERDTreeFind<cr>
+nnoremap <silent> <F9> :NERDTreeToggle<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => vim-multiple-cursors
+" => vim-visual-multi
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:multi_cursor_use_default_mapping=0
-
-" Default mapping
-let g:multi_cursor_start_word_key      = '<C-s>'
-let g:multi_cursor_select_all_word_key = '<A-s>'
-let g:multi_cursor_start_key           = 'g<C-s>'
-let g:multi_cursor_select_all_key      = 'g<A-s>'
-let g:multi_cursor_next_key            = '<C-s>'
-let g:multi_cursor_prev_key            = '<C-p>'
-let g:multi_cursor_skip_key            = '<C-x>'
-let g:multi_cursor_quit_key            = '<Esc>'
+let g:VM_maps = {}
+let g:VM_maps['Find Under'] = '<C-s>'
+let g:VM_maps['Find Subword Under'] = '<C-s>'
+let g:VM_maps['Select All'] = '<M-s>'
+let g:VM_maps['Visual All'] = '<M-s>'
+let g:VM_maps['Add Cursor Down'] = '<M-C-Down>'
+let g:VM_maps['Add Cursor Up'] = '<M-C-Up>'
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -126,7 +110,6 @@ let g:multi_cursor_quit_key            = '<Esc>'
 " Annotate strings with gettext 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 vmap Si S(i_<esc>f)
-au FileType mako vmap <buffer> Si S"i${ _(<esc>2f"a) }<esc>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -175,16 +158,34 @@ nnoremap <silent> <leader>z :Goyo<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => vim-test
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nnoremap <silent> <leader>tt :TestNearest<CR>
+nnoremap <silent> <leader>tf :TestFile<CR>
+nnoremap <silent> <leader>ts :TestSuite<CR>
+nnoremap <silent> <leader>tr :TestLast<CR>
+nnoremap <silent> <leader>tv :TestVisit<CR>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Ale (syntax checker and linter)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ale_linters = {
 \   'javascript': ['eslint'],
-\   'python': ['flake8'],
-\   'go': ['gopls', 'gobuild']
+\   'python': ['flake8', 'pyright']
 \}
 let g:ale_linters_explicit = 1
 
+" Pyright replaces jedi-vim's completion and code-navigation features while
+" reusing ALE as the single editor integration layer.
+let g:ale_completion_enabled = 1
+let g:ale_completion_delay = 200
+
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
+nnoremap <silent> gd <Plug>(ale_go_to_definition)
+nnoremap <silent> gr <Plug>(ale_find_references)
+nnoremap <silent> K <Plug>(ale_hover)
+nnoremap <silent> <leader>rn <Plug>(ale_rename)
 
 " Disabling highlighting
 let g:ale_set_highlights = 0
@@ -195,15 +196,6 @@ let g:ale_lint_on_enter = 0
 let g:ale_virtualtext_cursor = 'disabled'
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
-
-" ALE is the configured diagnostics engine.  Keep the bundled legacy
-" Syntastic plugin passive so both engines do not lint the same save.
-let g:syntastic_mode_map = {
-      \ 'mode': 'passive',
-      \ 'active_filetypes': [],
-      \ 'passive_filetypes': []
-      \ }
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Git gutter (Git diff)

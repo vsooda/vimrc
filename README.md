@@ -7,22 +7,22 @@ Over the last 10 years, I have used and tweaked Vim. This configuration is the u
 There are two versions:
 
 * **The Basic**: If you want something small just copy [basic.vim](https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim) into your ~/.vimrc and you will have a good basic setup
-* **The Awesome**: Includes a ton of useful plugins, color schemes, and configurations
+* **The Awesome**: Includes a curated plugin set, one consistent theme, and additional configurations
 
 I would, of course, recommend using the awesome version.
 
 
 ## How to install the Awesome version?
 ### Install for your own user only
-The awesome version includes a lot of great plugins, configurations and color schemes that make Vim a lot better. To install it simply do following from your terminal:
+The awesome version includes a focused set of plugins and configurations. To install it:
 
-	git clone --depth=1 https://github.com/amix/vimrc.git ~/.vim_runtime
+	git clone --depth=1 https://github.com/vsooda/vimrc.git ~/.vim_runtime
 	sh ~/.vim_runtime/install_awesome_vimrc.sh
 	
 ### Install for multiple users
 To install for multiple users, the repository needs to be cloned to a location accessible for all the intended users.
 
-	git clone --depth=1 https://github.com/amix/vimrc.git /opt/vim_runtime
+	git clone --depth=1 https://github.com/vsooda/vimrc.git /opt/vim_runtime
 	sh /opt/vim_runtime/install_awesome_parameterized.sh /opt/vim_runtime user0 user1 user2
 	# to install for all users with home directories, note that root will not be included
 	sh /opt/vim_runtime/install_awesome_parameterized.sh /opt/vim_runtime --all
@@ -60,14 +60,13 @@ If you have vim aliased as `vi` instead of `vim`, make sure to either alias it: 
 
 ## How to update to latest version?
 
-Just do a git rebase!
-
-
     cd ~/.vim_runtime
-    git reset --hard
-    git clean -d --force
     git pull --rebase
-    python update_plugins.py  # use python3 if python is unavailable
+    python3 update_plugins.py
+
+Pass plugin names to update only a subset, for example:
+
+    python3 update_plugins.py vim-grepper vim-sleuth
 
 ## Some screenshots
 
@@ -78,63 +77,62 @@ Colors when editing a Python file:
 [NERD Tree](https://github.com/preservim/nerdtree) plugin in a terminal window:
 ![Screenshot 3](https://dnp4pehkvoo6n.cloudfront.net/ae719203166585d64728f28398f4b1b7/as/Terminal%20usage.png)
 
-Distraction free mode using [goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-zenroom2](https://github.com/amix/vim-zenroom2):
+Distraction free mode using [goyo.vim](https://github.com/junegunn/goyo.vim):
 ![Screenshot 4](https://dnp4pehkvoo6n.cloudfront.net/f0dcc4c9739148c56cbf8285a910ac41/as/Zen%20mode.png)
 
 
 ## Included Plugins
 
-I recommend reading the docs of these plugins to understand them better. Each plugin provides a much better Vim experience!
+The bundle intentionally stays compact. User-facing plugins include:
 
-* [ack.vim](https://github.com/mileszs/ack.vim): Vim plugin for `the_silver_searcher` (ag) or ack -- a wicked fast grep
-* [bufexplorer.zip](https://github.com/vim-scripts/bufexplorer.zip): Quickly and easily switch between buffers. This plugin can be opened with `<leader+o>`
-* [ctrlp.vim](https://github.com/ctrlpvim/ctrlp.vim): Fuzzy file, buffer, mru and tag finder. It's mapped to `<Ctrl+F>`
-* [goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-zenroom2](https://github.com/amix/vim-zenroom2): 
-* [lightline.vim](https://github.com/itchyny/lightline.vim): A light and configurable statusline/tabline for Vim
-* [NERD Tree](https://github.com/preservim/nerdtree): A tree explorer plugin for vim
-* [open_file_under_cursor.vim](https://github.com/amix/open_file_under_cursor.vim): Open file under cursor when pressing `gf`
-* [pathogen.vim](https://github.com/tpope/vim-pathogen): Manage your vim runtimepath 
-* [snipmate.vim](https://github.com/garbas/vim-snipmate): snipmate.vim aims to be a concise vim script that implements some of TextMate's snippets features in Vim
-* [ale](https://github.com/dense-analysis/ale): Syntax and lint checking for vim (ALE requires NeoVim >= 0.2.0 or Vim 8 with +timers +job +channel)
-* [vim-commentary](https://github.com/tpope/vim-commentary): Comment stuff out.  Use `gcc` to comment out a line (takes a count), `gc` to comment out the target of a motion. `gcu` uncomments a set of adjacent commented lines
-* [vim-expand-region](https://github.com/terryma/vim-expand-region): Allows you to visually select increasingly larger regions of text using the same key combination
-* [vim-fugitive](https://github.com/tpope/vim-fugitive): A Git wrapper so awesome, it should be illegal
-* [vim-indent-object](https://github.com/michaeljsmith/vim-indent-object): Defines a new text object representing lines of code at the same indent level. Useful for python/vim scripts
-* [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors): Sublime Text style multiple selections for Vim, CTRL+N is remapped to CTRL+S (due to YankRing)
-* [vim-yankstack](https://github.com/maxbrunsfeld/vim-yankstack): Maintains a history of previous yanks, changes and deletes
-* [vim-zenroom2](https://github.com/amix/vim-zenroom2) Remove all clutter and focus only on the essential. Similar to iA Writer or Write Room
-* [gist-vim](https://github.com/mattn/gist-vim) Easily create gists from Vim using the `:Gist` command
-* [vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides) Is a plugin for visually displaying indent levels in Vim
-* [editorconfig-vim](https://github.com/editorconfig/editorconfig-vim) EditorConfig helps maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs
-* [copilot.vim](https://github.com/github/copilot.vim) Plugin for GitHub Copilot (AI autocompletion FTW 😅)
+* [ctrlp.vim](https://github.com/ctrlpvim/ctrlp.vim): fuzzy file, buffer, and MRU finder
+* [NERDTree](https://github.com/preservim/nerdtree): project tree explorer
+* [vim-grepper](https://github.com/mhinz/vim-grepper): asynchronous ripgrep search into quickfix
+* [ALE](https://github.com/dense-analysis/ale): diagnostics and lint integration
+* [lightline.vim](https://github.com/itchyny/lightline.vim): statusline and tabline
+* [copilot.vim](https://github.com/github/copilot.vim): GitHub Copilot completion
+* [editorconfig-vim](https://github.com/editorconfig/editorconfig-vim) and [vim-sleuth](https://github.com/tpope/vim-sleuth): project and heuristic indentation settings
+* [vim-fugitive](https://github.com/tpope/vim-fugitive), [vim-rhubarb](https://github.com/tpope/vim-rhubarb), and [vim-gitgutter](https://github.com/airblade/vim-gitgutter): Git workflow and change indicators
+* [vim-visual-multi](https://github.com/mg979/vim-visual-multi): multiple selections and cursors
+* [vim-unimpaired](https://github.com/tpope/vim-unimpaired): paired navigation and option toggles
+* [vim-test](https://github.com/vim-test/vim-test): run the nearest test, current file, or full test suite
+* [snipMate](https://github.com/garbas/vim-snipmate) and [vim-snippets](https://github.com/honza/vim-snippets): snippets
+* [vim-commentary](https://github.com/tpope/vim-commentary), [vim-surround](https://github.com/tpope/vim-surround), [vim-repeat](https://github.com/tpope/vim-repeat), and [vim-abolish](https://github.com/tpope/vim-abolish): core editing operators
+* [vim-expand-region](https://github.com/terryma/vim-expand-region), [vim-indent-object](https://github.com/michaeljsmith/vim-indent-object), [vim-yankstack](https://github.com/maxbrunsfeld/vim-yankstack), and [vim-lastplace](https://github.com/farmergreg/vim-lastplace): selection, text objects, yank history, and cursor restoration
+* [goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-markdown](https://github.com/plasticboy/vim-markdown): focused Markdown writing
 
 
 ## Included color schemes
 
-Type `:colorscheme <Tab>` to try out color schemes on the fly,
-or add the command to `~/.vim_runtime/my_configs.vim` (see [below](#how-to-include-your-own-stuff)),
-for example `colorscheme pyte`.
-
-* [peaksea](https://github.com/vim-scripts/peaksea): The default
-* [dracula](https://github.com/dracula/vim)
-* [vim-colors-solarized](https://github.com/altercation/vim-colors-solarized)
-* [vim-irblack](https://github.com/wgibbs/vim-irblack)
-* [mayansmoke](https://github.com/vim-scripts/mayansmoke)
-* [vim-pyte](https://github.com/therubymug/vim-pyte)
+The configuration ships one selected theme: [Molokai](https://github.com/tomasr/molokai).
 
 
-## Included modes
+Vim 9's built-in filetype support handles general languages; only Markdown
+keeps a dedicated syntax plugin.
 
-* [vim-coffee-script](https://github.com/kchmck/vim-coffee-script)
-* [vim-less](https://github.com/groenewege/vim-less)
-* [vim-bundle-mako](https://github.com/sophacles/vim-bundle-mako)
-* [vim-markdown](https://github.com/plasticboy/vim-markdown)
-* [nginx.vim](https://github.com/vim-scripts/nginx.vim): Highlights configuration files for nginx
-* [rust.vim](https://github.com/rust-lang/rust.vim)
-* [vim-ruby](https://github.com/vim-ruby/vim-ruby)
-* [typescript-vim](https://github.com/leafgarland/typescript-vim)
-* [vim-javascript](https://github.com/pangloss/vim-javascript)
-* [vim-python-pep8-indent](https://github.com/Vimjas/vim-python-pep8-indent)
+
+## Python development
+
+ALE uses Flake8 for linting and Pyright for completion, type information, and
+code navigation. Install both executables once:
+
+    brew install flake8
+    npm install --global pyright
+
+Useful Python mappings:
+
+* `gd`: go to definition; `gr`: find references
+* `K`: show hover documentation; `<leader>rn`: rename a symbol
+* `<leader>tt`: run the nearest test; `<leader>tf`: run the current test file
+* `<leader>ts`: run the suite; `<leader>tr`: repeat the last test
+
+Pytest itself remains a per-project dependency and should be installed in the
+project's virtual environment. Use `:ALEInfo` to verify that Vim can find
+`flake8` and `pyright-langserver`.
+
+For projects that standardize on Ruff, ALE can use `ruff` and `ruff_format`
+instead of Flake8. Do not enable both Flake8 and Ruff for the same rules, or
+Vim will show duplicate diagnostics.
 
 
 ## How to include your own stuff?
@@ -216,9 +214,9 @@ Switch [CWD](http://vim.wikia.com/wiki/Set_working_directory_to_the_current_file
 ```vim	
 map <leader>cd :cd %:p:h<cr>:pwd<cr>
 ```	
-Open `ack.vim` for fast search:
+Open vim-grepper's ripgrep prompt for fast project search:
 ```vim	
-map <leader>g :Ack 
+nnoremap <leader>g :Grepper -tool rg<CR>
 ```
 Quickly open a buffer for scripbble:
 ```vim	
@@ -236,9 +234,9 @@ Visual mode pressing `*` or `#` searches for the current selection:
 vnoremap <silent> * :call VisualSelection('f')<CR>
 vnoremap <silent> # :call VisualSelection('b')<CR>
 ```
-When you press gv you `Ack.vim` after the selected text:
+Search for the visual selection with vim-grepper:
 ```vim
-vnoremap <silent> gv :call VisualSelection('gv', '')<CR>
+xmap <leader>g <Plug>(GrepperOperator)
 ```
 When you press `<leader>r` you can search and replace the selected text:
 ```vim
@@ -293,80 +291,21 @@ Write the file as sudo (works only on Unix). Super useful when you open a file a
 
 ### Plugin related mappings
 
-Open [bufexplorer](https://github.com/vim-scripts/bufexplorer.zip) to see and manage the current buffers (`<leader>o`):
-```vim
-map <leader>o :BufExplorer<cr>
-```
-Open [ctrlp.vim](https://github.com/kien/ctrlp.vim) plugin to quickly find a file or a buffer (`<leader>j` or `<ctrl>f`):
-```vim
-" Quickly find and open a file in the CWD
-let g:ctrlp_map = '<C-f>'
+* `<C-f>` or `<leader>j`: find files with CtrlP
+* `<leader>f`: recently used files; `<leader>b`: open buffers
+* `<leader>nn` or `<F9>`: toggle NERDTree; `<leader>nf`: reveal current file
+* `<leader>g`: project search with ripgrep; in Visual mode search the selection
+* `[q` / `]q`: previous/next quickfix result; `[l` / `]l`: location-list result
+* `<C-s>`: add the word under the cursor to vim-visual-multi; `<M-s>`: select all
+* `<C-p>` / `<C-n>` after a paste: older/newer yankstack entry
+* Insert-mode `<C-j>` / `<C-k>`: next/previous snipMate placeholder
+* `<leader>a`: next ALE diagnostic
+* `<leader>z`: distraction-free Goyo mode
+* `<leader>v`: copy the current GitHub line URL with Fugitive/Rhubarb
 
-" Quickly find and open a recently opened file
-map <leader>f :MRU<CR>
+See `:help unimpaired`, `:help visual-multi`, and `:help grepper` for the
+additional mappings provided by the new plugins.
 
-" Quickly find and open a buffer
-map <leader>b :CtrlPBuffer<cr>
-```
-[NERD Tree](https://github.com/preservim/nerdtree) mappings:
-```vim
-map <leader>nn :NERDTreeToggle<cr>
-map <leader>nb :NERDTreeFromBookmark 
-map <leader>nf :NERDTreeFind<cr>
-```
-[goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-zenroom2](https://github.com/amix/vim-zenroom2) lets you only focus on one thing at a time. It removes all the distractions and centers the content. It has a special look when editing Markdown, reStructuredText and textfiles. It only has one mapping. (`<leader>z`)
-```vim
-map <leader>z :Goyo<cr>
-```
-[vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors) mappings to manage multiple cursors at once:
-```vim
-let g:multi_cursor_start_word_key      = '<C-s>'
-let g:multi_cursor_select_all_word_key = '<A-s>'
-let g:multi_cursor_start_key           = 'g<C-s>'
-let g:multi_cursor_select_all_key      = 'g<A-s>'
-let g:multi_cursor_next_key            = '<C-s>'
-let g:multi_cursor_prev_key            = '<C-p>'
-let g:multi_cursor_skip_key            = '<C-x>'
-let g:multi_cursor_quit_key            = '<Esc>'
-```
-[vim-yankstack](https://github.com/maxbrunsfeld/vim-yankstack) mappings to manage the kill-ring (clipboard):
-```vim
-nmap <C-p> <Plug>yankstack_substitute_older_paste
-nmap <C-n> <Plug>yankstack_substitute_newer_paste
-```
-[ctrl-p](https://github.com/ctrlpvim/ctrlp.vim) mappings to easily find and open a file, buffer, etc.:
-```vim
-let g:ctrlp_map = '<C-f>'
-map <leader>j :CtrlP<cr>
-map <C-b> :CtrlPBuffer<cr>
-```
-
-[vim-snipmate](https://github.com/garbas/vim-snipmate) mappings to autocomplete via snippets:
-```vim
-ino <C-j> <C-r>=snipMate#TriggerSnippet()<cr>
-snor <C-j> <esc>i<right><C-r>=snipMate#TriggerSnippet()<cr>
-```
-[vim-surround](https://github.com/tpope/vim-surround) mappings to easily surround a string with `_()` gettext annotation:
-```vim
-vmap Si S(i_<esc>f)
-au FileType mako vmap Si S"i${ _(<esc>2f"a) }<esc>
-```
-[ale](https://github.com/dense-analysis/ale) to easily go to the next Ale syntax/lint error:
-```vim
-nmap <silent> <leader>a <Plug>(ale_next_wrap)
-```
-[vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides) the default mapping to toggle the plugin is (`<leader>ig`)
-
-    You can also use the following commands inside Vim:
-    :IndentGuidesEnable
-    :IndentGuidesDisable
-    :IndentGuidesToggle
-
-[vim-fugitive](https://github.com/tpope/vim-fugitive) to copy the link to the line of a Git repository to the clipboard:
-```vim
-nnoremap <leader>v :.GBrowse!<CR>
-xnoremap <leader>v :'<'>GBrowse!<CR>
-```
 ### Spell checking
 Pressing `<leader>ss` will toggle spell checking:
 ```vim
@@ -384,25 +323,11 @@ To run code directly from vim, press `F5`. The currently open code will execute 
 
 Can be used to execute code written in C, C++, Java, Python, Go, Octave, Bash scripts and HTML. To edit how you want your code to be executed, make changes in the file `~/.vim_runtime/vimrcs/extended.vim`
 
-### Cope
-Query `:help cope` if you are unsure what cope is. It's super useful!
+### Quickfix
 
-When you search with `Ack.vim`, display your results in cope by doing:
-`<leader>cc`
-
-To go to the next search result do:
-`<leader>n`
-
-To go to the previous search results do:
-`<leader>p`
-
-Cope mappings:
-```vim
-map <leader>cc :botright cope<cr>
-map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
-map <leader>n :cn<cr>
-map <leader>p :cp<cr>
-```
+Grepper and ALE put results in Vim's quickfix/location lists. Use
+`<leader>cc` to open quickfix, `[q` / `]q` to navigate quickfix, and
+`[l` / `]l` to navigate the current location list.
 
 ## How to uninstall
 Just do following:
@@ -415,4 +340,3 @@ Just do following:
 Maintaining this Vim configuration isn't my day job. Daily I am the founder/CEO of [Doist](https://doist.com/). You could come and help us build the workplace of the future while living a balanced life (anywhere in the world 🌍🌎🌏).
 
 PS: Using Vim isn't a requirement 😄
-
