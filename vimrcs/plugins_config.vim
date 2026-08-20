@@ -15,10 +15,12 @@ set packpath+=~/.vim_runtime
 " => Load pathogen paths
 """"""""""""""""""""""""""""""
 let s:vim_runtime = expand('<sfile>:p:h')."/.."
-call pathogen#infect(s:vim_runtime.'/sources_forked/{}')
-call pathogen#infect(s:vim_runtime.'/sources_non_forked/{}')
-call pathogen#infect(s:vim_runtime.'/my_plugins/{}')
-call pathogen#helptags()
+call pathogen#infect(
+      \ s:vim_runtime.'/sources_forked/{}',
+      \ s:vim_runtime.'/sources_non_forked/{}',
+      \ s:vim_runtime.'/my_plugins/{}')
+" Help tags are generated when plugins change, not on every startup.
+" Run :Helptags manually after adding or updating a plugin.
 
 
 """"""""""""""""""""""""""""""
@@ -35,6 +37,7 @@ map <leader>o :BufExplorer<cr>
 " => MRU plugin
 """"""""""""""""""""""""""""""
 let MRU_Max_Entries = 400
+let MRU_Add_Menu = 0
 map <leader>f :MRU<CR>
 
 
@@ -73,8 +76,13 @@ let g:user_zen_mode='a'
 """"""""""""""""""""""""""""""
 " => snipMate (beside <TAB> support <CTRL-j>)
 """"""""""""""""""""""""""""""
-ino <C-j> <C-r>=snipMate#TriggerSnippet()<cr>
-snor <C-j> <esc>i<right><C-r>=snipMate#TriggerSnippet()<cr>
+" Copilot owns <Tab>; use Ctrl-J/K for snippet navigation without causing the
+" two plugins to fight over the same mapping during startup.
+let g:snips_no_mappings = 1
+imap <C-j> <Plug>snipMateNextOrTrigger
+smap <C-j> <Plug>snipMateSNext
+imap <C-k> <Plug>snipMateBack
+smap <C-k> <Plug>snipMateBack
 let g:snipMate = { 'snippet_version' : 1 }
 
 
@@ -118,21 +126,23 @@ let g:multi_cursor_quit_key            = '<Esc>'
 " Annotate strings with gettext 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 vmap Si S(i_<esc>f)
-au FileType mako vmap Si S"i${ _(<esc>2f"a) }<esc>
+au FileType mako vmap <buffer> Si S"i${ _(<esc>2f"a) }<esc>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => lightline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:lightline = {
-      \ 'colorscheme': 'wombat',
+      \ 'colorscheme': 'molokai',
       \ 'active': {
       \   'left': [ ['mode', 'paste'],
-      \             ['fugitive', 'readonly', 'filename', 'modified'] ],
-      \   'right': [ [ 'lineinfo' ], ['percent'] ]
+      \             ['fugitive', 'readonly', 'relativepath', 'modified'] ],
+      \   'right': [ ['linter_checking', 'linter_errors', 'linter_warnings'],
+      \              ['lineinfo'], ['percent'],
+      \              ['fileformat', 'fileencoding', 'filetype'] ]
       \ },
       \ 'component': {
-      \   'readonly': '%{&filetype=="help"?"":&readonly?"🔒":""}',
+      \   'readonly': '%{&filetype=="help"?"":&readonly?"RO":""}',
       \   'modified': '%{&filetype=="help"?"":&modified?"+":&modifiable?"":"-"}',
       \   'fugitive': '%{exists("*FugitiveHead")?FugitiveHead():""}'
       \ },
@@ -141,8 +151,18 @@ let g:lightline = {
       \   'modified': '(&filetype!="help"&&(&modified||!&modifiable))',
       \   'fugitive': '(exists("*FugitiveHead") && ""!=FugitiveHead())'
       \ },
-      \ 'separator': { 'left': ' ', 'right': ' ' },
-      \ 'subseparator': { 'left': ' ', 'right': ' ' }
+      \ 'component_expand': {
+      \   'linter_checking': 'lightline#ale#checking',
+      \   'linter_warnings': 'lightline#ale#warnings',
+      \   'linter_errors': 'lightline#ale#errors'
+      \ },
+      \ 'component_type': {
+      \   'linter_checking': 'right',
+      \   'linter_warnings': 'warning',
+      \   'linter_errors': 'error'
+      \ },
+      \ 'separator': { 'left': '', 'right': '' },
+      \ 'subseparator': { 'left': '|', 'right': '|' }
       \ }
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -160,8 +180,9 @@ nnoremap <silent> <leader>z :Goyo<cr>
 let g:ale_linters = {
 \   'javascript': ['eslint'],
 \   'python': ['flake8'],
-\   'go': ['go', 'golint', 'errcheck']
+\   'go': ['gopls', 'gobuild']
 \}
+let g:ale_linters_explicit = 1
 
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
 
@@ -172,12 +193,22 @@ let g:ale_set_highlights = 0
 let g:ale_lint_on_text_changed = 'never'
 let g:ale_lint_on_enter = 0
 let g:ale_virtualtext_cursor = 'disabled'
+let g:ale_sign_error = 'E'
+let g:ale_sign_warning = 'W'
+
+" ALE is the configured diagnostics engine.  Keep the bundled legacy
+" Syntastic plugin passive so both engines do not lint the same save.
+let g:syntastic_mode_map = {
+      \ 'mode': 'passive',
+      \ 'active_filetypes': [],
+      \ 'passive_filetypes': []
+      \ }
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Git gutter (Git diff)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:gitgutter_enabled=0
+let g:gitgutter_enabled=1
 nnoremap <silent> <leader>d :GitGutterToggle<cr>
 
 

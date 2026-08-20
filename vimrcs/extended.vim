@@ -35,8 +35,11 @@ colorscheme peaksea
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Fast editing and reloading of vimrc configs
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-map <leader>e :e! ~/.vim_runtime/my_configs.vim<cr>
-autocmd! bufwritepost ~/.vim_runtime/my_configs.vim source ~/.vim_runtime/my_configs.vim
+nnoremap <silent> <leader>e :edit ~/.vim_runtime/my_configs.vim<cr>
+augroup reload_my_configs
+    autocmd!
+    autocmd BufWritePost ~/.vim_runtime/my_configs.vim source ~/.vim_runtime/my_configs.vim | redraw | echo 'Vim config reloaded'
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -44,7 +47,8 @@ autocmd! bufwritepost ~/.vim_runtime/my_configs.vim source ~/.vim_runtime/my_con
 "    means that you can undo even when you close a buffer/VIM
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 try
-    set undodir=~/.vim_runtime/temp_dirs/undodir
+    call mkdir(expand('~/.vim_runtime/temp_dirs/undodir'), 'p')
+    set undodir=~/.vim_runtime/temp_dirs/undodir//
     set undofile
 catch
 endtry
@@ -142,8 +146,8 @@ map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
 map <leader>n :cn<cr>
 map <leader>p :cp<cr>
 
-" Make sure that enter is never overriden in the quickfix window
-autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+" Make sure that enter is never overridden in the quickfix window.
+autocmd FileType qf nnoremap <buffer> <CR> <CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -173,58 +177,51 @@ func! CurrentFileDir(cmd)
     return a:cmd . " " . escape(expand("%:p:h"), " ") . "/"
 endfunc
 
-"=================================================================================
-"
-"   Following file contains the commands on how to run the currently open code.
-"   The default mapping is set to F5 like most code editors.
-"   Change it as you feel comfortable with, keeping in mind that it does not
-"   clash with any other keymapping.
-"
-"   NOTE: Compilers for different systems may differ. For example, in the case
-"   of C and C++, we have assumed it to be gcc and g++ respectively, but it may
-"   not be the same. It is suggested to check first if the compilers are installed
-"   before running the code, or maybe even switch to a different compiler.
-"
-"   NOTE: Adding support for more programming languages
-"
-"   Just add another elseif block before the 'endif' statement in the same
-"   way it is done in each case. Take care to add tabbed spaces after each
-"   elseif block (similar to python). For example:
-"
-"   elseif &filetype == '<your_file_extension>'
-"       exec '!<your_compiler> %'
-"
-"   NOTE: The '%' sign indicates the name of the currently open file with extension.
-"         The time command displays the time taken for execution. Remove the
-"         time command if you dont want the system to display the time
-"
-"=================================================================================
+" Run the current C, C++, Java, shell, Python, Go, Matlab, or HTML file with
+" F5.  Paths are shell-escaped so projects containing spaces work correctly.
 
-map <F5> :call CompileRun()<CR>
-imap <F5> <Esc>:call CompileRun()<CR>
-vmap <F5> <Esc>:call CompileRun()<CR>
+nnoremap <F5> :call CompileRun()<CR>
+inoremap <F5> <Esc>:call CompileRun()<CR>
+xnoremap <F5> <Esc>:call CompileRun()<CR>
 
-func! CompileRun()
-exec "w"
-if &filetype == 'c'
-    exec "!gcc % -o %<"
-    exec "!time ./%<"
-elseif &filetype == 'cpp'
-    exec "!g++ % -o %<"
-    exec "!time ./%<"
-elseif &filetype == 'java'
-    exec "!javac %"
-    exec "!time java %"
-elseif &filetype == 'sh'
-    exec "!time bash %"
-elseif &filetype == 'python'
-    exec "!time python3 %"
-elseif &filetype == 'html'
-    exec "!google-chrome % &"
-elseif &filetype == 'go'
-    exec "!go build %<"
-    exec "!time go run %"
-elseif &filetype == 'matlab'
-    exec "!time octave %"
-endif
-endfunc
+function! CompileRun() abort
+    let l:path = expand('%:p')
+    if empty(l:path)
+        echoerr 'Save the buffer before running it'
+        return
+    endif
+
+    update
+    let l:file = shellescape(l:path)
+    let l:output = shellescape(fnamemodify(l:path, ':r'))
+
+    if &filetype ==# 'c'
+        execute '!cc ' . l:file . ' -o ' . l:output . ' && ' . l:output
+    elseif &filetype ==# 'cpp'
+        execute '!c++ ' . l:file . ' -o ' . l:output . ' && ' . l:output
+    elseif &filetype ==# 'java'
+        let l:dir = shellescape(fnamemodify(l:path, ':h'))
+        let l:class = shellescape(fnamemodify(l:path, ':t:r'))
+        execute '!cd ' . l:dir . ' && javac ' . l:file . ' && java ' . l:class
+    elseif &filetype ==# 'sh'
+        execute '!bash ' . l:file
+    elseif &filetype ==# 'python'
+        execute '!python3 ' . l:file
+    elseif &filetype ==# 'go'
+        execute '!go run ' . l:file
+    elseif &filetype ==# 'matlab'
+        execute '!octave ' . l:file
+    elseif &filetype ==# 'html'
+        if has('macunix') && executable('open')
+            execute 'silent !open ' . l:file
+        elseif executable('xdg-open')
+            execute 'silent !xdg-open ' . l:file . ' >/dev/null 2>&1 &'
+        else
+            echoerr 'No supported browser opener found'
+        endif
+    else
+        echohl WarningMsg
+        echo 'No F5 runner configured for filetype: ' . &filetype
+        echohl None
+    endif
+endfunction

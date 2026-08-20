@@ -14,10 +14,9 @@ source $1/vimrcs/filetypes.vim
 source $1/vimrcs/plugins_config.vim
 source $1/vimrcs/extended.vim
 
-try
+if filereadable('$1/my_configs.vim')
   source $1/my_configs.vim
-catch
-endtry"
+endif"
 
 if [ "$2" = "--all" ]; then
     USERS=$(ls -l /home | awk '{if(NR>1)print $9}')

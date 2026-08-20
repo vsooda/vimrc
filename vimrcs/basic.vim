@@ -33,9 +33,8 @@
 " Sets how many lines of history VIM has to remember
 set history=500
 
-" Enable filetype plugins
-filetype plugin on
-filetype indent on
+" Enable filetype plugins and indentation in one pass.
+filetype plugin indent on
 
 " Set to auto read when a file is changed from the outside
 set autoread
@@ -46,11 +45,10 @@ au FocusGained,BufEnter * silent! checktime
 let mapleader = ","
 
 " Fast saving
-nmap <leader>w :w!<cr>
+nnoremap <silent> <leader>w :update<cr>
 
-" :W sudo saves the file
-" (useful for handling the permission-denied error)
-command! W execute 'w !sudo tee % > /dev/null' <bar> edit!
+" :W sudo saves the file (useful after a permission-denied error).
+command! -bar W call SudoWriteCurrentFile()
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -59,11 +57,13 @@ command! W execute 'w !sudo tee % > /dev/null' <bar> edit!
 " Set 7 lines to the cursor - when moving vertically using j/k
 set so=7
 
-" Avoid garbled characters in Chinese language windows OS
-let $LANG='en'
-set langmenu=en
-source $VIMRUNTIME/delmenu.vim
-source $VIMRUNTIME/menu.vim
+" Keep terminal subprocesses in the user's locale.  GUI menus can use English
+" without overriding $LANG for every command launched from Vim.
+if has('gui_running')
+    set langmenu=en
+    silent! source $VIMRUNTIME/delmenu.vim
+    silent! source $VIMRUNTIME/menu.vim
+endif
 
 " Turn on the Wild menu
 set wildmenu
@@ -220,8 +220,8 @@ map <C-k> <C-W>k
 map <C-h> <C-W>h
 map <C-l> <C-W>l
 
-" Close the current buffer
-map <leader>bd :Bclose<cr>:tabclose<cr>gT
+" Close the current buffer without discarding unsaved changes.
+nnoremap <silent> <leader>bd :Bclose<cr>
 
 " Close all the buffers
 map <leader>ba :bufdo bd<cr>
@@ -343,11 +343,34 @@ function! HasPaste()
     return ''
 endfunction
 
+function! SudoWriteCurrentFile() abort
+    let l:filename = expand('%:p')
+    if empty(l:filename)
+        echoerr 'Cannot sudo-write an unnamed buffer'
+        return
+    endif
+
+    execute 'silent write !sudo tee ' . shellescape(l:filename) . ' >/dev/null'
+    if v:shell_error == 0
+        edit!
+        echo 'Wrote ' . l:filename
+    else
+        echoerr 'sudo write failed'
+    endif
+endfunction
+
 " Don't close window, when deleting a buffer
-command! Bclose call <SID>BufcloseCloseIt()
-function! <SID>BufcloseCloseIt()
+command! -bar -bang Bclose call <SID>BufcloseCloseIt(<bang>0)
+function! <SID>BufcloseCloseIt(force)
     let l:currentBufNum = bufnr("%")
     let l:alternateBufNum = bufnr("#")
+
+    if getbufvar(l:currentBufNum, '&modified') && !a:force
+        echohl WarningMsg
+        echo 'Buffer has unsaved changes; use :Bclose! to discard them'
+        echohl None
+        return
+    endif
 
     if buflisted(l:alternateBufNum)
         buffer #
@@ -360,7 +383,7 @@ function! <SID>BufcloseCloseIt()
     endif
 
     if buflisted(l:currentBufNum)
-        execute("bdelete! ".l:currentBufNum)
+        execute 'bdelete' . (a:force ? '!' : '') . ' ' . l:currentBufNum
     endif
 endfunction
 
