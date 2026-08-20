@@ -1,3 +1,43 @@
+" Keep Markdown files fully expanded when opened.  The vim-markdown plugin
+" otherwise installs a header-based fold expression, which closes sections at
+" Vim's default fold level.
+let g:vim_markdown_folding_disabled = 1
+
+" Avoid duplicate recent-file databases.  CtrlP already provides MRU search,
+" so skip the standalone MRU plugin and keep the existing <leader>f workflow.
+let loaded_mru = 1
+nnoremap <silent> <leader>f :CtrlPMRUFiles<CR>
+let g:ctrlp_mruf_max = 100
+
+" Keep useful command/search history, but do not persist copied or deleted text
+" in ~/.viminfo.  In-memory history remains controlled by 'history'.
+set viminfo='50,<0,s10,h,:100,/100,@50
+
+" Do not create ~/.netrwhist when Vim's built-in file browser is used.
+let g:netrw_dirhistmax = 0
+
+" Persistent undo is useful for source and documentation files, but it can
+" retain old contents from credentials long after the original file changes.
+function! s:DisablePersistentUndoForSensitiveFile(path) abort
+    let l:path = simplify(fnamemodify(a:path, ':p'))
+    let l:name = fnamemodify(l:path, ':t')
+
+    let l:sensitive_dir = '/\.\%(aws\|claude\|codex\|docker\|gnupg\|kube\|ssh\)/'
+    let l:sensitive_name = '^\%(\.env\%(\..*\)\?\|\.git-credentials\|\.netrc\|\.npmrc\|\.pypirc\|credentials\?\%(\..*\)\?\|keys\?\%(\..*\)\?\|secrets\?\%(\..*\)\?\|tokens\?\%(\..*\)\?\)$'
+
+    if l:path =~# l:sensitive_dir
+                \ || l:path =~# '/\.config/gcloud/'
+                \ || l:name =~? l:sensitive_name
+                \ || l:name =~? '\.\%(key\|pem\|p12\|pfx\)$'
+        setlocal noundofile
+    endif
+endfunction
+
+augroup private_files_no_persistent_undo
+    autocmd!
+    autocmd BufReadPre,BufNewFile * call <SID>DisablePersistentUndoForSensitiveFile(expand('<afile>'))
+augroup END
+
 nnoremap <F9> :exe 'NERDTreeToggle'<CR>
 "set pastetoggle=<F2>
 "for easy copy 

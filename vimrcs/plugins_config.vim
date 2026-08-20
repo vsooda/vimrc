@@ -12,7 +12,8 @@ let s:vim_runtime = expand('<sfile>:p:h')."/.."
 call pathogen#infect(s:vim_runtime.'/sources_forked/{}')
 call pathogen#infect(s:vim_runtime.'/sources_non_forked/{}')
 call pathogen#infect(s:vim_runtime.'/my_plugins/{}')
-call pathogen#helptags()
+" Help tags only need rebuilding after plugins are installed or updated.
+" Run :Helptags manually at that time instead of rewriting them on every start.
 
 """"""""""""""""""""""""""""""
 " => bufExplorer plugin
